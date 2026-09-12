@@ -1,10 +1,10 @@
 # NetWatch
 
-NetWatch is a learning focused network and infrastructure monitoring system.
+NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 1 provides a minimal FastAPI backend with a health check endpoint and an automated test.
+Milestone 1 provides a minimal FastAPI backend with a health-check endpoint and an automated test.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ Milestone 1 provides a minimal FastAPI backend with a health check endpoint and 
 ```bash
 cd backend
 python3 -m venv .venv
-source .verv/bin/activate
+source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
@@ -26,6 +26,10 @@ cd backend
 source .venv/bin/activate
 python -m uvicorn app.main:app --reload
 ```
+
+Health check: `http://127.0.0.1:8000/health`
+
+Interactive documentation: `http://127.0.0.1:8000/docs`
 
 ## Run Tests
 
