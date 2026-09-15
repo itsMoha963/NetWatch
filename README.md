@@ -4,12 +4,13 @@ NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 2 provides an in-memory Device API with validation, CRUD operations,
-and automated API tests. PostgreSQL persistence is planned for Milestone 3.
+Milestone 3 is in progress. The Device API still uses temporary in-memory
+storage, and a PostgreSQL development database now runs through Docker Compose.
 
 ## Requirements
 
 - Python 3.11 or newer
+- Docker Desktop with Docker Compose
 
 ## Backend Setup
 
@@ -19,6 +20,34 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
+
+## PostgreSQL Setup
+
+Run these commands from the repository root. Create your local environment file
+from the tracked example, then replace `change_me` with a development password:
+
+```bash
+cp .env.example .env
+docker compose config --quiet
+docker compose up -d postgres
+```
+
+Check that PostgreSQL is running:
+
+```bash
+docker compose ps
+docker compose exec postgres psql -U netwatch -d netwatch \
+  -c "SELECT current_database(), current_user;"
+```
+
+Stop the container when you are finished:
+
+```bash
+docker compose down
+```
+
+The named Docker volume preserves the database between normal stops. Running
+`docker compose down --volumes` also deletes the local database data.
 
 ## Run The API
 
@@ -48,7 +77,7 @@ Interactive documentation: `http://127.0.0.1:8000/docs`
 - Multiple API processes would not share the same device data.
 - Duplicate hostnames and IP addresses are not rejected yet.
 - Metrics, monitoring workers, and alerts are not implemented yet.
-- PostgreSQL will replace the temporary storage in Milestone 3.
+- PostgreSQL is running, but the Device API is not connected to it yet.
 
 ## Run Tests
 
