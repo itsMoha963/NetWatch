@@ -143,3 +143,45 @@ def test_delete_missing_device():
     assert response.json() == {
         "detail": "Device with ID 999997 not found"
     }
+
+
+def test_create_rejects_invalid_ip_address():
+    client = TestClient(app)
+
+    response = client.post(
+        "/devices",
+        json={
+            "name": "Invalid Router",
+            "hostname": "invalid-router",
+            "ip_address": "not-an-ip",
+            "device_type": "router",
+        },
+    )
+
+    assert response.status_code == 422
+
+    error_locations = [
+        error["loc"] for error in response.json()["detail"]
+    ]
+    assert ["body", "ip_address"] in error_locations
+
+
+def test_create_rejects_invalid_device_type():
+    client = TestClient(app)
+
+    response = client.post(
+        "/devices",
+        json={
+            "name": "Invalid Device",
+            "hostname": "invalid-device",
+            "ip_address": "10.0.0.80",
+            "device_type": "printer",
+        },
+    )
+
+    assert response.status_code == 422
+
+    error_locations = [
+        error["loc"] for error in response.json()["detail"]
+    ]
+    assert ["body", "device_type"] in error_locations
