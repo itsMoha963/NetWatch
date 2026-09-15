@@ -32,3 +32,19 @@ async def get_device(device_id: int) -> DeviceResponse:
         )
 
     return device
+
+
+@router.put("/{device_id}", response_model=DeviceResponse)
+async def replace_device(
+    device_id: int,
+    replacement: DeviceCreate,
+) -> DeviceResponse:
+    replaced_device = device_service.replace(device_id, replacement)
+
+    if replaced_device is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device with ID {device_id} not found",
+        )
+
+    return replaced_device

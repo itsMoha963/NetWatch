@@ -57,3 +57,54 @@ def test_get_missing_device():
     assert response.json() == {
         "detail": "Device with ID 92929 not found"
     }
+
+
+def test_replace_existing_device():
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/devices",
+        json={
+            "name": "my-office",
+            "hostname": "office",
+            "ip_address": "193.0.1.1",
+            "device_type": "switch",
+        },
+    )
+    original = create_response.json()
+
+    replacement = {
+        "name": "New Switch",
+        "hostname": "new-switch",
+        "ip_address": "10.0.0.2",
+        "device_type": "switch",
+    }
+
+    response = client.put(f"/devices/{original['id']}", json=replacement)
+    updated = response.json()
+
+    assert response.status_code == 200
+
+    for field, value in replacement.items():
+        assert updated[field] == value
+
+    for field in ("id", "status", "last_seen", "created_at"):
+        assert updated[field] == original[field]
+
+
+def test_replace_missing_device():
+    client = TestClient(app)
+
+    replacement = {
+        "name": "New Switch",
+        "hostname": "new-switch",
+        "ip_address": "10.0.0.2",
+        "device_type": "switch",
+    }
+
+    response = client.put("/devices/923412", json=replacement)
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Device with ID 923412 not found"
+    }
