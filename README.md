@@ -4,7 +4,8 @@ NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 1 provides a minimal FastAPI backend with a health-check endpoint and an automated test.
+Milestone 2 provides an in-memory Device API with validation, CRUD operations,
+and automated API tests. PostgreSQL persistence is planned for Milestone 3.
 
 ## Requirements
 
@@ -30,6 +31,24 @@ python -m uvicorn app.main:app --reload
 Health check: `http://127.0.0.1:8000/health`
 
 Interactive documentation: `http://127.0.0.1:8000/docs`
+
+## Device API
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/devices` | Create a device |
+| `GET` | `/devices` | List all devices |
+| `GET` | `/devices/{device_id}` | Get one device |
+| `PUT` | `/devices/{device_id}` | Replace one device |
+| `DELETE` | `/devices/{device_id}` | Delete one device |
+
+## Current Limitations
+
+- Devices are stored in process memory and disappear when the API restarts.
+- Multiple API processes would not share the same device data.
+- Duplicate hostnames and IP addresses are not rejected yet.
+- Metrics, monitoring workers, and alerts are not implemented yet.
+- PostgreSQL will replace the temporary storage in Milestone 3.
 
 ## Run Tests
 
