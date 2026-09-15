@@ -48,3 +48,14 @@ async def replace_device(
         )
 
     return replaced_device
+
+
+@router.delete("/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_device(device_id: int) -> None:
+    deleted = device_service.delete(device_id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device with ID {device_id} not found",
+        )

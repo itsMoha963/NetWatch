@@ -108,3 +108,38 @@ def test_replace_missing_device():
     assert response.json() == {
         "detail": "Device with ID 923412 not found"
     }
+
+
+def test_delete_existing_device():
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/devices",
+        json={
+            "name": "Temporary Router",
+            "hostname": "temporary-router",
+            "ip_address": "10.0.0.60",
+            "device_type": "router",
+        },
+    )
+    assert create_response.status_code == 201
+
+    device_id = create_response.json()["id"]
+    response = client.delete(f"/devices/{device_id}")
+
+    assert response.status_code == 204
+    assert response.content == b""
+
+    lookup_response = client.get(f"/devices/{device_id}")
+    assert lookup_response.status_code == 404
+
+
+def test_delete_missing_device():
+    client = TestClient(app)
+
+    response = client.delete("/devices/999997")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Device with ID 999997 not found"
+    }

@@ -53,3 +53,7 @@ class DeviceService:
 
         self._devices[device_id] = replaced_device
         return replaced_device
+
+    def delete(self, device_id: int) -> bool:
+        deleted_device = self._devices.pop(device_id, None)
+        return deleted_device is not None
