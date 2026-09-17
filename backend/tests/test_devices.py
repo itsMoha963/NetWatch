@@ -1,11 +1,4 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-def test_create_then_list_devices():
-    client = TestClient(app)
-
+def test_create_then_list_devices(client):
     initial_response = client.get("/devices")
     initial_count = len(initial_response.json())
 
@@ -28,9 +21,7 @@ def test_create_then_list_devices():
     assert create_response.json() in listed_devices
 
 
-def test_get_existing_device():
-    client = TestClient(app)
-
+def test_get_existing_device(client):
     create_response = client.post(
         "/devices",
         json={
@@ -48,9 +39,7 @@ def test_get_existing_device():
     assert response.json() == created_device
 
 
-def test_get_missing_device():
-    client = TestClient(app)
-
+def test_get_missing_device(client):
     response = client.get("/devices/92929")
 
     assert response.status_code == 404
@@ -59,9 +48,7 @@ def test_get_missing_device():
     }
 
 
-def test_replace_existing_device():
-    client = TestClient(app)
-
+def test_replace_existing_device(client):
     create_response = client.post(
         "/devices",
         json={
@@ -92,9 +79,7 @@ def test_replace_existing_device():
         assert updated[field] == original[field]
 
 
-def test_replace_missing_device():
-    client = TestClient(app)
-
+def test_replace_missing_device(client):
     replacement = {
         "name": "New Switch",
         "hostname": "new-switch",
@@ -110,9 +95,7 @@ def test_replace_missing_device():
     }
 
 
-def test_delete_existing_device():
-    client = TestClient(app)
-
+def test_delete_existing_device(client):
     create_response = client.post(
         "/devices",
         json={
@@ -134,9 +117,7 @@ def test_delete_existing_device():
     assert lookup_response.status_code == 404
 
 
-def test_delete_missing_device():
-    client = TestClient(app)
-
+def test_delete_missing_device(client):
     response = client.delete("/devices/999997")
 
     assert response.status_code == 404
@@ -145,9 +126,7 @@ def test_delete_missing_device():
     }
 
 
-def test_create_rejects_invalid_ip_address():
-    client = TestClient(app)
-
+def test_create_rejects_invalid_ip_address(client):
     response = client.post(
         "/devices",
         json={
@@ -166,9 +145,7 @@ def test_create_rejects_invalid_ip_address():
     assert ["body", "ip_address"] in error_locations
 
 
-def test_create_rejects_invalid_device_type():
-    client = TestClient(app)
-
+def test_create_rejects_invalid_device_type(client):
     response = client.post(
         "/devices",
         json={

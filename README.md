@@ -4,8 +4,8 @@ NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 3 is in progress. The Device API still uses temporary in-memory
-storage, and a PostgreSQL development database now runs through Docker Compose.
+Milestone 3 is in progress. The Device API persists devices in PostgreSQL,
+which runs locally through Docker Compose.
 
 ## Requirements
 
@@ -30,6 +30,13 @@ from the tracked example, then replace `change_me` with a development password:
 cp .env.example .env
 docker compose config --quiet
 docker compose up -d postgres
+```
+
+Apply the database migrations from the `backend/` directory:
+
+```bash
+cd backend
+python -m alembic upgrade head
 ```
 
 Check that PostgreSQL is running:
@@ -73,11 +80,10 @@ Interactive documentation: `http://127.0.0.1:8000/docs`
 
 ## Current Limitations
 
-- Devices are stored in process memory and disappear when the API restarts.
-- Multiple API processes would not share the same device data.
-- Duplicate hostnames and IP addresses are not rejected yet.
+- Database constraints reject duplicate hostnames and IP addresses, but the API
+  does not yet translate those conflicts into a friendly HTTP response.
 - Metrics, monitoring workers, and alerts are not implemented yet.
-- PostgreSQL is running, but the Device API is not connected to it yet.
+- Dedicated PostgreSQL integration tests are not implemented yet.
 
 ## Run Tests
 

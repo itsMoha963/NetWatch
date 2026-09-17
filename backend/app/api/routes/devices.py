@@ -1,10 +1,17 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from app.api.deps import get_device_service
 from app.schemas.device import DeviceCreate, DeviceResponse
-from app.services.device_service import DeviceService
+from app.services.persistent_device_service import PersistentDeviceService
+
+DeviceServiceDep = Annotated[
+    PersistentDeviceService,
+    Depends(get_device_service),
+]
 
 router = APIRouter(prefix="/devices", tags=["Devices"])
-device_service = DeviceService()
 
 
 @router.post(
@@ -12,18 +19,26 @@ device_service = DeviceService()
     response_model=DeviceResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_device(device: DeviceCreate) -> DeviceResponse:
-    return device_service.create(device)
+async def create_device(
+    device: DeviceCreate,
+    service: DeviceServiceDep,
+) -> DeviceResponse:
+    return service.create(device)
 
 
 @router.get("", response_model=list[DeviceResponse])
-async def list_devices() -> list[DeviceResponse]:
-    return device_service.list_all()
+async def list_devices(
+    service: DeviceServiceDep,
+) -> list[DeviceResponse]:
+    return service.list_all()
 
 
 @router.get("/{device_id}", response_model=DeviceResponse)
-async def get_device(device_id: int) -> DeviceResponse:
-    device = device_service.get_by_id(device_id)
+async def get_device(
+    device_id: int,
+    service: DeviceServiceDep,
+) -> DeviceResponse:
+    device = service.get_by_id(device_id)
 
     if device is None:
         raise HTTPException(
@@ -38,8 +53,9 @@ async def get_device(device_id: int) -> DeviceResponse:
 async def replace_device(
     device_id: int,
     replacement: DeviceCreate,
+    service: DeviceServiceDep,
 ) -> DeviceResponse:
-    replaced_device = device_service.replace(device_id, replacement)
+    replaced_device = service.replace(device_id, replacement)
 
     if replaced_device is None:
         raise HTTPException(
@@ -51,8 +67,11 @@ async def replace_device(
 
 
 @router.delete("/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_device(device_id: int) -> None:
-    deleted = device_service.delete(device_id)
+async def delete_device(
+    device_id: int,
+    service: DeviceServiceDep,
+) -> None:
+    deleted = service.delete(device_id)
 
     if not deleted:
         raise HTTPException(
