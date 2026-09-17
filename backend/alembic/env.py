@@ -7,6 +7,7 @@ from sqlalchemy import pool
 from app.db.base import Base
 from app.db.session import database_url
 from app.models.device import Device
+from app.models.metric import Metric
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
