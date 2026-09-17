@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from app.models.device import Device
 from app.repositories.device_repository import DeviceRepository
-from app.schemas.device import DeviceCreate, DeviceResponse
+from app.schemas.device import DeviceCreate, DeviceResponse, DeviceStatus
 
 
 class PersistentDeviceService:
@@ -55,4 +57,23 @@ class PersistentDeviceService:
 
         saved_device = self._repository.save(existing_device)
 
+        return DeviceResponse.model_validate(saved_device)
+
+    def update_monitoring_status(
+        self,
+        device_id: int,
+        status: DeviceStatus,
+        checked_at: datetime,
+    ) -> DeviceResponse | None:
+        device = self._repository.get_by_id(device_id)
+
+        if device is None:
+            return None
+
+        device.status = status.value
+
+        if status is DeviceStatus.ONLINE:
+            device.last_seen = checked_at
+
+        saved_device = self._repository.save(device)
         return DeviceResponse.model_validate(saved_device)

@@ -4,8 +4,8 @@ NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 4 is complete. Device inventory and historical metrics persist in
-PostgreSQL, which runs locally through Docker Compose.
+Milestone 5 is complete. Device inventory and historical metrics persist in
+PostgreSQL, and a simulator can run periodic monitoring cycles.
 
 ## Requirements
 
@@ -68,6 +68,26 @@ Health check: `http://127.0.0.1:8000/health`
 
 Interactive documentation: `http://127.0.0.1:8000/docs`
 
+## Run Simulated Monitoring
+
+Run one monitoring cycle from the `backend/` directory:
+
+```bash
+python -m app.workers.run_monitoring
+```
+
+Run five cycles with ten seconds between cycles:
+
+```bash
+python -m app.workers.run_monitoring --cycles 5 --interval 10
+```
+
+Run continuously until `Ctrl+C`:
+
+```bash
+python -m app.workers.run_monitoring --cycles 0 --interval 30
+```
+
 ## Device API
 
 | Method | Path | Purpose |
@@ -84,7 +104,8 @@ Interactive documentation: `http://127.0.0.1:8000/docs`
 
 - Database constraints reject duplicate hostnames and IP addresses, but the API
   does not yet translate those conflicts into a friendly HTTP response.
-- Automatic monitoring workers and alerts are not implemented yet.
+- Alert generation is not implemented yet.
+- Simulated monitoring runs as a separate command rather than a production job queue.
 - The React dashboard is not implemented yet.
 
 ## Run Tests
