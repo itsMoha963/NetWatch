@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field, IPvAnyAddress
+from pydantic import BaseModel, ConfigDict, Field, IPvAnyAddress
+
 
 class DeviceType(str, Enum):
     ROUTER = "router"
@@ -23,6 +24,8 @@ class DeviceStatus(str, Enum):
 
 
 class DeviceResponse(DeviceCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     status: DeviceStatus
     last_seen: datetime | None = None
