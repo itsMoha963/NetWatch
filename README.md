@@ -87,8 +87,26 @@ Interactive documentation: `http://127.0.0.1:8000/docs`
 
 ## Run Tests
 
+Run the fast API tests, which use an in-memory service override:
+
 ```bash
 cd backend
 source .venv/bin/activate
 python -m pytest -v
 ```
+
+Run the PostgreSQL repository integration test against the isolated test
+database:
+
+```bash
+docker compose exec postgres createdb -U netwatch netwatch_test
+cd backend
+POSTGRES_DB=netwatch_test python -m alembic upgrade head
+RUN_DB_TESTS=1 POSTGRES_DB=netwatch_test python -m pytest -m integration -v
+```
+
+The `createdb` command is only needed once and reports an error if the test
+database already exists.
+
+The integration test refuses to run against any database other than
+`netwatch_test`.

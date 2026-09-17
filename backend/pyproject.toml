@@ -20,3 +20,8 @@ dev = [
     "pytest",
     "httpx",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that require the isolated PostgreSQL test database",
+]
