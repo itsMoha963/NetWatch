@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.db.session import session_factory
 from app.repositories.device_repository import DeviceRepository
+from app.repositories.metric_repository import MetricRepository
+from app.services.metric_service import MetricService
 from app.services.persistent_device_service import PersistentDeviceService
 
 
@@ -27,3 +29,25 @@ def get_device_service(
     ],
 ) -> PersistentDeviceService:
     return PersistentDeviceService(repository)
+
+
+def get_metric_repository(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> MetricRepository:
+    return MetricRepository(session)
+
+
+def get_metric_service(
+    metric_repository: Annotated[
+        MetricRepository,
+        Depends(get_metric_repository),
+    ],
+    device_repository: Annotated[
+        DeviceRepository,
+        Depends(get_device_repository),
+    ],
+) -> MetricService:
+    return MetricService(
+        metric_repository,
+        device_repository,
+    )

@@ -4,8 +4,8 @@ NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 3 is in progress. The Device API persists devices in PostgreSQL,
-which runs locally through Docker Compose.
+Milestone 4 is complete. Device inventory and historical metrics persist in
+PostgreSQL, which runs locally through Docker Compose.
 
 ## Requirements
 
@@ -77,13 +77,15 @@ Interactive documentation: `http://127.0.0.1:8000/docs`
 | `GET` | `/devices/{device_id}` | Get one device |
 | `PUT` | `/devices/{device_id}` | Replace one device |
 | `DELETE` | `/devices/{device_id}` | Delete one device |
+| `POST` | `/devices/{device_id}/metrics` | Store one measurement |
+| `GET` | `/devices/{device_id}/metrics` | List recent measurements |
 
 ## Current Limitations
 
 - Database constraints reject duplicate hostnames and IP addresses, but the API
   does not yet translate those conflicts into a friendly HTTP response.
-- Metrics, monitoring workers, and alerts are not implemented yet.
-- Dedicated PostgreSQL integration tests are not implemented yet.
+- Automatic monitoring workers and alerts are not implemented yet.
+- The React dashboard is not implemented yet.
 
 ## Run Tests
 
