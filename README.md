@@ -4,8 +4,9 @@ NetWatch is a learning-focused network and infrastructure monitoring system.
 
 ## Current Status
 
-Milestone 5 is complete. Device inventory and historical metrics persist in
-PostgreSQL, and a simulator can run periodic monitoring cycles.
+The MVP is complete. NetWatch persists devices, historical metrics, and
+duplicate-safe alerts in PostgreSQL. A Docker Compose stack runs the API,
+database, monitoring worker, and React dashboard together.
 
 ## Requirements
 
@@ -56,6 +57,22 @@ docker compose down
 The named Docker volume preserves the database between normal stops. Running
 `docker compose down --volumes` also deletes the local database data.
 
+## Run The Full Stack With Docker
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+Open the dashboard at `http://127.0.0.1:5173` and the API documentation at
+`http://127.0.0.1:8000/docs`. The Compose network lets the backend and worker
+reach PostgreSQL using the service hostname `postgres`; the browser reaches the
+API through the published host port `8000`.
+
+The `monitoring-worker` service runs one simulated check every 30 seconds. Stop
+the stack with `Ctrl+C` or `docker compose down`.
+
 ## Run The API
 
 ```bash
@@ -67,6 +84,9 @@ python -m uvicorn app.main:app --reload
 Health check: `http://127.0.0.1:8000/health`
 
 Interactive documentation: `http://127.0.0.1:8000/docs`
+
+The API can also be run locally while PostgreSQL remains in Docker. In that
+case, use the local `.env` values where `POSTGRES_HOST=localhost`.
 
 ## Run Simulated Monitoring
 
@@ -99,14 +119,17 @@ python -m app.workers.run_monitoring --cycles 0 --interval 30
 | `DELETE` | `/devices/{device_id}` | Delete one device |
 | `POST` | `/devices/{device_id}/metrics` | Store one measurement |
 | `GET` | `/devices/{device_id}/metrics` | List recent measurements |
+| `GET` | `/alerts` | List alerts, optionally filtered by resolution |
+| `GET` | `/alerts/devices/{device_id}` | List alerts for one device |
 
 ## Current Limitations
 
-- Database constraints reject duplicate hostnames and IP addresses, but the API
-  does not yet translate those conflicts into a friendly HTTP response.
-- Alert generation is not implemented yet.
-- Simulated monitoring runs as a separate command rather than a production job queue.
-- The React dashboard is not implemented yet.
+- The simulator is deterministic only when given a seeded random generator; it
+  is intentionally not a real network probe.
+- Simulated monitoring is a simple long-running Compose service rather than a
+  production job queue with retries and scheduling guarantees.
+- Authentication, authorization, SNMP, Prometheus, Grafana, and WebSockets are
+  later extensions.
 
 ## Run Tests
 
