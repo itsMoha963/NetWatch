@@ -1,27 +1,35 @@
 import argparse
+import logging
 import time
 
 from app.db.session import session_factory
+from app.repositories.alert_repository import AlertRepository
 from app.repositories.device_repository import DeviceRepository
 from app.repositories.metric_repository import MetricRepository
+from app.services.alert_service import AlertService
 from app.services.metric_service import MetricService
 from app.services.persistent_device_service import PersistentDeviceService
 from app.simulator.device_simulator import DeviceSimulator
 from app.workers.monitoring_worker import MonitoringWorker
+
+logger = logging.getLogger(__name__)
 
 
 def run_cycle(simulator: DeviceSimulator) -> int:
     with session_factory() as session:
         device_repository = DeviceRepository(session)
         metric_repository = MetricRepository(session)
+        alert_repository = AlertRepository(session)
         device_service = PersistentDeviceService(device_repository)
         metric_service = MetricService(
             metric_repository,
             device_repository,
         )
+        alert_service = AlertService(alert_repository)
         worker = MonitoringWorker(
             device_service,
             metric_service,
+            alert_service,
             simulator,
         )
 
@@ -36,7 +44,7 @@ def run_monitoring(cycles: int, interval_seconds: float) -> None:
         while cycles == 0 or completed_cycles < cycles:
             processed_count = run_cycle(simulator)
             completed_cycles += 1
-            print(
+            logger.info(
                 f"Monitoring cycle {completed_cycles} complete: "
                 f"{processed_count} devices processed"
             )
@@ -46,7 +54,7 @@ def run_monitoring(cycles: int, interval_seconds: float) -> None:
 
             time.sleep(interval_seconds)
     except KeyboardInterrupt:
-        print("\nMonitoring stopped")
+        logger.info("Monitoring stopped")
 
 
 def parse_args() -> argparse.Namespace:
@@ -77,6 +85,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
     args = parse_args()
 
     run_monitoring(args.cycles, args.interval)
@@ -84,3 +96,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+from app.services.alert_service import AlertService

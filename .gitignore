@@ -10,3 +10,8 @@ __pycache__/
 build/
 dist/
 NETWATCH_ROADMAP.md
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
