@@ -6,6 +6,7 @@ from sqlalchemy import pool
 
 from app.db.base import Base
 from app.db.session import database_url
+from app.models.alert import Alert
 from app.models.device import Device
 from app.models.metric import Metric
 

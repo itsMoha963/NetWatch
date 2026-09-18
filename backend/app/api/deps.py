@@ -5,8 +5,10 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import session_factory
+from app.repositories.alert_repository import AlertRepository
 from app.repositories.device_repository import DeviceRepository
 from app.repositories.metric_repository import MetricRepository
+from app.services.alert_service import AlertService
 from app.services.metric_service import MetricService
 from app.services.persistent_device_service import PersistentDeviceService
 
@@ -51,3 +53,18 @@ def get_metric_service(
         metric_repository,
         device_repository,
     )
+
+
+def get_alert_repository(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> AlertRepository:
+    return AlertRepository(session)
+
+
+def get_alert_service(
+    repository: Annotated[
+        AlertRepository,
+        Depends(get_alert_repository),
+    ],
+) -> AlertService:
+    return AlertService(repository)

@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 from app.schemas.device import DeviceStatus
 from app.schemas.metric import MetricCreate
+from app.services.alert_service import AlertService
 from app.services.metric_service import MetricService
 from app.services.persistent_device_service import PersistentDeviceService
 from app.simulator.device_simulator import DeviceSimulator, SimulationResult
@@ -12,6 +13,7 @@ from app.workers.monitoring_worker import MonitoringWorker
 def build_worker(result: SimulationResult, updated_device=object()):
     device_service = Mock(spec=PersistentDeviceService)
     metric_service = Mock(spec=MetricService)
+    alert_service = Mock(spec=AlertService)
     simulator = Mock(spec=DeviceSimulator)
     device_service.list_all.return_value = [Mock(id=1)]
     device_service.update_monitoring_status.return_value = updated_device
@@ -20,10 +22,18 @@ def build_worker(result: SimulationResult, updated_device=object()):
     worker = MonitoringWorker(
         device_service,
         metric_service,
+        alert_service,
         simulator,
         clock=lambda: checked_at,
     )
-    return worker, device_service, metric_service, simulator, checked_at
+    return (
+        worker,
+        device_service,
+        metric_service,
+        alert_service,
+        simulator,
+        checked_at,
+    )
 
 
 def test_online_result_updates_device_and_stores_metric():
@@ -34,7 +44,14 @@ def test_online_result_updates_device_and_stores_metric():
         uptime_seconds=30,
     )
     result = SimulationResult(DeviceStatus.ONLINE, metric)
-    worker, device_service, metric_service, simulator, checked_at = (
+    (
+        worker,
+        device_service,
+        metric_service,
+        alert_service,
+        simulator,
+        checked_at,
+    ) = (
         build_worker(result)
     )
 
@@ -48,11 +65,24 @@ def test_online_result_updates_device_and_stores_metric():
         checked_at,
     )
     metric_service.create.assert_called_once_with(1, metric)
+    alert_service.evaluate.assert_called_once_with(
+        1,
+        DeviceStatus.ONLINE,
+        metric,
+        checked_at,
+    )
 
 
 def test_offline_result_updates_device_without_storing_metric():
     result = SimulationResult(DeviceStatus.OFFLINE, None)
-    worker, device_service, metric_service, _, checked_at = build_worker(
+    (
+        worker,
+        device_service,
+        metric_service,
+        alert_service,
+        _,
+        checked_at,
+    ) = build_worker(
         result
     )
 
@@ -65,6 +95,12 @@ def test_offline_result_updates_device_without_storing_metric():
         checked_at,
     )
     metric_service.create.assert_not_called()
+    alert_service.evaluate.assert_called_once_with(
+        1,
+        DeviceStatus.OFFLINE,
+        None,
+        checked_at,
+    )
 
 
 def test_worker_skips_device_deleted_during_monitoring():
@@ -75,7 +111,7 @@ def test_worker_skips_device_deleted_during_monitoring():
         uptime_seconds=30,
     )
     result = SimulationResult(DeviceStatus.ONLINE, metric)
-    worker, _, metric_service, _, _ = build_worker(
+    worker, _, metric_service, alert_service, _, _ = build_worker(
         result,
         updated_device=None,
     )
@@ -84,3 +120,4 @@ def test_worker_skips_device_deleted_during_monitoring():
 
     assert processed_count == 0
     metric_service.create.assert_not_called()
+    alert_service.evaluate.assert_not_called()
